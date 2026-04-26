@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NYUMBAconnect - Immobilier Bukavu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        [v-cloak] { display: none; }
+    </style>
+</head>
+<body class="bg-slate-50">
+
+    <div id="app" v-cloak>
+        <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 py-3">
+            <div class="max-w-6xl mx-auto flex justify-between items-center">
+                <div class="flex items-center gap-2 cursor-pointer" @click="view = 'home'">
+                    <div class="bg-blue-600 p-2 rounded-xl shadow-lg shadow-blue-200">
+                        <i class="fas fa-building text-white"></i>
+                    </div>
+                    <h1 class="text-xl font-black tracking-tighter text-blue-900">NYUMBAconnect ASBL</h1>
+                </div>
+                
+                <button @click="openAdmin" class="bg-slate-900 text-white px-5 py-2.5 rounded-2xl text-sm font-bold flex items-center gap-2 hover:bg-blue-600 transition-all">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Publier</span>
+                </button>
+            </div>
+        </nav>
+
+        <main class="max-w-6xl mx-auto px-4 py-10">
+            <div v-if="view === 'home'">
+                <div class="mb-12 bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100 flex flex-col md:flex-row items-center gap-8">
+                    <div class="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center text-green-500 text-4xl shrink-0 shadow-inner">
+                        <i class="fab fa-whatsapp"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-2xl font-black text-slate-800 mb-2">Bienvenue sur <span class="text-blue-600">NYUMBAconnect ASBL</span></h3>
+                        <p class="text-slate-600 leading-relaxed mb-4">Trouvez votre prochaine maison à Bukavu sans intermédiaire inutile.Nous sommes des facilitateurs et non des commissionnaires.</p>
+                        <div class="inline-flex items-center gap-3 bg-slate-900 text-white px-6 py-3 rounded-2xl">
+                            <span class="relative flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span></span>
+                            <p class="text-sm font-semibold">Service disponible 24h/24  Clique sur l’icône WhatsApp pour nous contacter directement.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h2 class="text-3xl font-extrabold text-slate-800 mb-8 px-2">Maison <span class="text-blue-600">disponible</span></h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div v-for="a in annonces" :key="a.id" class="bg-white rounded-[2rem] overflow-hidden shadow-sm border border-slate-100 hover:shadow-xl transition-all duration-300">
+                        <div class="relative h-64">
+                            <img :src="a.photoLink" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/400x300?text=Image+non+disponible'">
+                            <div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-black text-blue-600 shadow-sm">{{ a.type }}</div>
+                        </div>
+                        <div class="p-6">
+                            <h4 class="text-xl font-bold text-slate-800 mb-1">{{ a.titre }}</h4>
+                            <p class="text-slate-500 text-sm flex items-center gap-2 mb-4">
+                                <i class="fas fa-map-marker-alt text-red-400"></i> 
+                                <span class="font-semibold">{{ a.localisation.avenue }}</span>, {{ a.localisation.quartier }}
+                            </p>
+                            
+                            <div class="flex justify-between items-center pt-4 border-t border-slate-50">
+                                <div>
+                                    <p class="text-[10px] uppercase font-bold text-slate-400">Prix</p>
+                                    <span class="text-2xl font-black text-blue-700">{{ a.prix }}</span>
+                                </div>
+                                <div class="flex gap-2">
+                                    <a :href="generateWA(a)" target="_blank" class="bg-green-500 hover:bg-green-600 text-white w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg transition-transform active:scale-90">
+                                        <i class="fab fa-whatsapp text-2xl"></i>
+                                    </a>
+                                    <button v-if="isAdmin" @click="supprimerAnnonce(a.id)" class="bg-red-50 text-red-600 w-12 h-12 rounded-2xl flex items-center justify-center hover:bg-red-600 hover:text-white transition-all">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="view === 'admin'" class="max-w-xl mx-auto">
+                <div class="bg-white rounded-[2.5rem] shadow-2xl p-8 border border-blue-50">
+                    <div class="flex items-center gap-4 mb-8">
+                        <button @click="view = 'home'" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 text-blue-600"><i class="fas fa-chevron-left"></i></button>
+                        <h2 class="text-2xl font-black text-slate-800">Publier une offre</h2>
+                    </div>
+
+                    <div class="space-y-6">
+                        <input type="text" v-model="newA.titre" placeholder="Titre (ex: Appartement à louer)" class="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-blue-500 outline-none">
+                        <input type="url" v-model="newA.photoLink" placeholder="Lien de la photo (URL)" class="w-full p-4 bg-blue-50/50 rounded-2xl border-2 border-blue-100 focus:border-blue-500 outline-none">
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <input type="text" v-model="newA.prix" placeholder="Prix (ex: 300$/mois)" class="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-blue-500 outline-none">
+                            <input type="text" v-model="newA.whatsapp" placeholder="WhatsApp (243...)" class="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-blue-500 outline-none">
+                        </div>
+
+                        <div class="bg-slate-50 p-6 rounded-[2rem] space-y-4">
+                            <p class="text-xs font-black text-slate-400 uppercase">Bonne maison</p>
+                            <input type="text" v-model="newA.localisation.avenue" placeholder="Avenue" class="w-full p-3 bg-white border border-slate-200 rounded-xl outline-none focus:border-blue-500">
+                            <div class="grid grid-cols-2 gap-3">
+                                <input type="text" v-model="newA.localisation.quartier" placeholder="Quartier" class="p-3 bg-white border border-slate-200 rounded-xl outline-none">
+                                <input type="text" v-model="newA.localisation.commune" placeholder="Commune" class="p-3 bg-white border border-slate-200 rounded-xl outline-none">
+                            </div>
+                        </div>
+
+                        <button @click="ajouterAnnonce" class="w-full bg-blue-600 text-white py-5 rounded-[1.5rem] font-black text-lg shadow-xl hover:bg-blue-700 transition-all uppercase tracking-widest">Publier sur le Cloud</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <div v-if="showModal" class="fixed inset-0 bg-slate-900/90 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-10 text-center shadow-2xl">
+                <i class="fas fa-shield-halved text-5xl text-blue-600 mb-6"></i>
+                <h2 class="text-2xl font-black text-slate-800 mb-2">Accès Sécurisé</h2>
+                <input type="password" v-model="passInput" placeholder="Code secret" class="w-full p-4 bg-slate-100 rounded-2xl mb-4 text-center font-bold outline-none focus:ring-2 focus:ring-blue-500">
+                <div class="flex gap-2">
+                    <button @click="showModal = false" class="flex-1 py-4 text-slate-400 font-bold">Annuler</button>
+                    <button @click="verifyPass" class="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-bold">Entrer</button>
+                </div>
+            </div>
+        </div>
+
+          <footer class="relative bg-slate-900 text-white pt-20 pb-10 mt-20 overflow-hidden">
+    <div class="absolute top-0 left-0 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
+    <div class="absolute bottom-0 right-0 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl translate-x-1/3 translate-y-1/3"></div>
+
+    <div class="max-w-6xl mx-auto px-6 relative z-10">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-12 pb-12 border-b border-white/10 text-center md:text-left">
+            
+            <div class="space-y-6">
+                <div class="flex items-center justify-center md:justify-start gap-3">
+                    <div class="bg-gradient-to-br from-blue-500 to-blue-700 p-2.5 rounded-2xl shadow-lg shadow-blue-500/20">
+                        <i class="fas fa-home-alt text-white text-xl"></i>
+                    </div>
+                    <span class="text-2xl font-black tracking-tighter uppercase italic">NYUMBA<span class="text-blue-500">connect</span></span>
+                </div>
+                <p class="text-slate-400 text-sm leading-relaxed max-w-xs mx-auto md:mx-0">
+                    La plateforme n°1 à Bukavu pour trouver un logement rapidement, en toute sécurité et sans frais cachés.
+                </p>
+                <div class="flex items-center justify-center md:justify-start gap-4">
+                    <a href="#" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-blue-600 transition-all border border-white/10"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-pink-600 transition-all border border-white/10"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-blue-400 transition-all border border-white/10"><i class="fab fa-twitter"></i></a>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <h4 class="text-lg font-bold text-white flex items-center justify-center md:justify-start gap-2">
+                    <i class="fas fa-link text-blue-500 text-sm"></i> Navigation
+                </h4>
+                <ul class="text-slate-400 text-sm space-y-3">
+                    <li><a href="#" @click.prevent="view = 'home'" class="hover:text-blue-400 transition-colors">Toutes les annonces</a></li>
+                    <li><a href="#" class="hover:text-blue-400 transition-colors">Maisons à louer</a></li>
+                    <li><a href="#" class="hover:text-blue-400 transition-colors">Terrains à vendre</a></li>
+                    <li><a href="#" class="hover:text-blue-400 transition-colors">Devenir partenaire</a></li>
+                </ul>
+            </div>
+
+            <div class="space-y-6 text-center md:text-right">
+                <h4 class="text-lg font-bold text-white flex items-center justify-center md:justify-end gap-2">
+                    <i class="fas fa-headset text-blue-500 text-sm"></i> Support Client
+                </h4>
+                <div class="space-y-2">
+                    <p class="text-slate-400 text-sm">Bukavu, Sud-Kivu, RD Congo</p>
+                    <p class="text-xl font-black text-white">+243 902 553 512</p>
+                    <p class="text-blue-500 text-xs font-bold uppercase tracking-widest">Disponible 7j/7</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="pt-10 flex flex-col md:flex-row justify-between items-center gap-6">
+            <p class="text-slate-500 text-xs">
+                &copy; 2026 NYUMBAconnect. Tous droits réservés.
+            </p>
+            <div class="flex items-center gap-4">
+                <span class="text-slate-500 text-[10px] font-black uppercase tracking-widest">Designed by</span>
+                <div class="px-4 py-2 bg-gradient-to-r from-blue-600/20 to-transparent border-l-2 border-blue-600">
+                    <span class="text-sm font-black italic text-blue-400">Séraphin BALOLA CIZA</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+           
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Configuration Firebase vérifiée
+        const firebaseConfig = {
+            apiKey: "AIzaSyDusYKh_Ezm43oJDxuCTSM0tHcdWFvY544",
+            authDomain: "nyumbaconnect-88a5a.firebaseapp.com",
+            projectId: "nyumbaconnect-88a5a",
+            storageBucket: "nyumbaconnect-88a5a.firebasestorage.app",
+            messagingSenderId: "724244332897",
+            appId: "1:724244332897:web:0a4903e0be221922b44520",
+            measurementId: "G-9YF62Y72BW"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const { createApp } = Vue
+        createApp({
+            data() {
+                return {
+                    view: 'home', showModal: false, passInput: '', isAdmin: false,
+                    newA: {
+                        titre: '', photoLink: '', prix: '', whatsapp: '243', type: 'Location',
+                        localisation: { avenue: '', quartier: '', commune: '', ville: 'Bukavu' }
+                    },
+                    annonces: []
+                }
+            },
+            mounted() {
+                this.chargerAnnonces();
+            },
+            methods: {
+                chargerAnnonces() {
+                    const q = query(collection(db, "annonces"), orderBy("dateCreation", "desc"));
+                    onSnapshot(q, (snapshot) => {
+                        this.annonces = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                    });
+                },
+                async ajouterAnnonce() {
+                    if(!this.newA.titre || !this.newA.photoLink) return alert("Veuillez remplir les informations !");
+                    try {
+                        await addDoc(collection(db, "annonces"), { ...this.newA, dateCreation: Date.now() });
+                        this.view = 'home';
+                        this.newA = { titre: '', photoLink: '', prix: '', whatsapp: '243', type: 'Location', localisation: { avenue: '', quartier: '', commune: '', ville: 'Bukavu' }};
+                    } catch (e) { alert("Erreur : " + e.message); }
+                },
+                async supprimerAnnonce(id) {
+                    if(confirm("Confirmer la suppression ?")) {
+                        await deleteDoc(doc(db, "annonces", id));
+                    }
+                },
+                openAdmin() { this.isAdmin ? this.view = 'admin' : this.showModal = true; },
+                verifyPass() {
+                    if(this.passInput === 'ciza+243#') { this.isAdmin = true; this.showModal = false; this.view = 'admin'; }
+                    else { alert("Code incorrect"); }
+                },
+                generateWA(a) {
+                    const msg = `Bonjour NYUMBAconnect! \nJe suis intéressé par : *${a.titre}*.\nLieu : ${a.localisation.avenue}, ${a.localisation.quartier}.\nPrix : ${a.prix}.`;
+                    return `https://wa.me/${a.whatsapp}?text=${encodeURIComponent(msg)}`;
+                }
+            }
+        }).mount('#app')
+    </script>
+</body>
+</html>
